@@ -54,16 +54,16 @@ def main():
             count += 1
             if args.verbose:
                 print(f"capturing message {count} of {len(j['response']['messages'])}")
+            m['favorites count'] = len(m['favorited_by'])
             messagesD[m['id']] = m
         done = True
 
 
+    if args.verbose:
+        print(f"writing to {args.output_file}...")
     with open(args.output_file, 'w') as f:
 
-        fieldnames = messagesD.values[0].keys()
-
-        pp.pprint(fieldnames)
-        return
+        fieldnames = next(iter(messagesD.values())).keys()
 
         writer = csv.DictWriter(f, fieldnames=fieldnames)
 
@@ -71,7 +71,7 @@ def main():
 
         for k, v in messagesD.items():
             #wtr.writerow([v[0], v[1], k])
-            writer.writerow({'first_name': 'Baked', 'last_name': 'Beans'})
+            writer.writerow(v)
 
 
 
