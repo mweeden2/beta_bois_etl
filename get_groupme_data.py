@@ -36,8 +36,8 @@ def main():
     # Construct the full url
     url = base_url + "?token=" + token
 
-    # Output dir (linkId results)
-    linkIdsd = dict()
+    # Output dict (results)
+    messagesD = dict()
 
     # Call for all the messages
     done = False
@@ -47,19 +47,32 @@ def main():
 
         j = r.json()
         if args.verbose:
-            pp.pprint(j)
-        return
+            # pp.pprint([x for x in j['response']['messages']][0])
+            pass
+        count = 0
+        for m in j['response']['messages']:
+            count += 1
+            if args.verbose:
+                print(f"capturing message {count} of {len(j['response']['messages'])}")
+            messagesD[m['id']] = m
+        done = True
 
 
     with open(args.output_file, 'w') as f:
-        wtr = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
-        # write header row
-        wtr.writerow(['source', 'nativeId', 'linkId'])
-        # f.write('"source","nativeId","linkId"')
+        fieldnames = messagesD.values[0].keys()
 
-        for k, v in linkIdsd.items():
-            wtr.writerow([v[0], v[1], k])
+        pp.pprint(fieldnames)
+        return
+
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+        writer.writeheader()
+
+        for k, v in messagesD.items():
+            #wtr.writerow([v[0], v[1], k])
+            writer.writerow({'first_name': 'Baked', 'last_name': 'Beans'})
+
 
 
     return True
