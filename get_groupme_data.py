@@ -21,7 +21,6 @@ def main():
     parser = argparse.ArgumentParser(description="Present a directory of json identity files to the verato-proxy web "
                                                  "service")
     parser.add_argument("-v", "--verbose", help="be verbose about it", action="store_true")
-    parser.add_argument("-i", "--input_dir", required=True, help="directory of json identity files")
     parser.add_argument("-o", "--output_file", required=True, help="filename (path) where resulting csv file will be "
                                                                    "created")
     args = parser.parse_args()
@@ -29,29 +28,28 @@ def main():
     pp = pprint.PrettyPrinter(indent=4)
 
     # Verato proxy web service endpoint
-    url = "http://child.dev.myhealthaccess.net/verato-proxy/api/postIdentity"
+    base_url = "https://api.groupme.com/v3/groups/32181249/messages"
+
+    # Get the GroupMe token
+    token = os.environ["GROUPME_TOKEN"]
+
+    # Construct the full url
+    url = base_url + "?token=" + token
 
     # Output dir (linkId results)
     linkIdsd = dict()
 
-    # Open the input file directory
-    for filename in os.listdir(args.input_dir):
+    # Call for all the messages
+    done = False
+    while not done:
 
-        if (filename.endswith(".json")):
-            with open(args.input_dir + "/" + filename, 'r') as f:
-                data = json.loads(f.read())
+        r = requests.get(url)
 
-                source = data['identity']['sources'][0]['name']
-                nativeId = data['identity']['sources'][0]['id']
+        j = r.json()
+        if args.verbose:
+            pp.pprint(j)
+        return
 
-                r = requests.post(url, json=data)
-
-                j = r.json()
-                linkId = j['content']['linkId']
-                if args.verbose:
-                    print(source + ' ' + nativeId + ': ' + linkId)
-
-                linkIdsd[linkId] = (source, nativeId)
 
     with open(args.output_file, 'w') as f:
         wtr = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
